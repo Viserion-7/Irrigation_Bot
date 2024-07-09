@@ -66,7 +66,7 @@ def view_schedule():
 # Function to log watering events
 def log_watering_event(manual=False):
     event = {
-        "timestamp": datetime.datetime.now().isoformat(),
+        "timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),
         "manual": manual,
         "moisture_level": get_current_moisture_level()
     }
