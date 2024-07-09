@@ -13,7 +13,7 @@ def get_last_watered():
         return f.readline()
     except:
         return "NEVER!"
-      
+
 def get_status(pin = 8):
     GPIO.setup(pin, GPIO.IN) 
     return GPIO.input(pin)

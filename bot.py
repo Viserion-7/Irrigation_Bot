@@ -7,11 +7,35 @@ import datetime
 import random
 from dotenv import load_dotenv
 import re
+import RPi.GPIO as GPIO
+import time
 
 load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
 botRunning = True
 bot = telebot.TeleBot(API_TOKEN)
+
+# GPIO setup
+GPIO.setmode(GPIO.BOARD)
+PUMP_PIN = 7
+MOISTURE_SENSOR_PIN = 8
+
+def init_output(pin):
+    GPIO.setup(pin, GPIO.OUT)
+    GPIO.output(pin, GPIO.LOW)
+    GPIO.output(pin, GPIO.HIGH)
+
+def pump_on(pump_pin=PUMP_PIN, delay=1):
+    init_output(pump_pin)
+    with open("last_watered.txt", "w") as f:
+        f.write("Last watered {}".format(datetime.datetime.now()))
+    GPIO.output(pump_pin, GPIO.LOW)
+    time.sleep(delay)
+    GPIO.output(pump_pin, GPIO.HIGH)
+
+def get_status(pin=MOISTURE_SENSOR_PIN):
+    GPIO.setup(pin, GPIO.IN)
+    return GPIO.input(pin)
 
 # Global variables to store schedule and data
 schedule_file = 'schedule.txt'
@@ -38,7 +62,7 @@ def notify_moisture_watering():
 
 # Function to manually water plants
 def water_now():
-    # Add your code to activate the water pump
+    pump_on()
     bot.send_message(chat_id, "Watering plants manually now!")
     log_watering_event(manual=True)
 
@@ -74,16 +98,16 @@ def log_watering_event(manual=False):
     with open(moisture_data_file, 'w') as f:
         json.dump(moisture_data, f)
 
-# Function to get current moisture level (simulated)
+# Function to get current moisture level
 def get_current_moisture_level():
-    # Simulate a range of moisture levels
-    return random.randint(20, 60)  # Example moisture level
+    GPIO.setup(MOISTURE_SENSOR_PIN, GPIO.IN)
+    return GPIO.input(MOISTURE_SENSOR_PIN)  # Returns 0 if wet, 1 if dry
 
 # Function to generate weekly report and save as CSV
 def generate_weekly_report():
     now = datetime.datetime.now()
     one_week_ago = now - datetime.timedelta(days=7)
-    report_data = [entry for entry in moisture_data if datetime.datetime.fromisoformat(entry["timestamp"]) > one_week_ago]
+    report_data = [entry for entry in moisture_data if datetime.datetime.strptime(entry["timestamp"], '%Y-%m-%d %H:%M') > one_week_ago]
 
     csv_file = 'weekly_report.csv'
     with open(csv_file, 'w', newline='') as file:
