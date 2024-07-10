@@ -20,7 +20,7 @@ moisture_data_file = 'moisture_data.json'
 chat_id = None
 
 # GPIO setup
-MOISTURE_SENSOR_PIN = 21
+MOISTURE_SENSOR_PIN = 14
 PUMP_PIN = 7
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(MOISTURE_SENSOR_PIN, GPIO.IN)
