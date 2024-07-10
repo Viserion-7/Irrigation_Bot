@@ -196,6 +196,6 @@ try:
     while True:
         bot.polling(none_stop=True)
         handle_check_moisture()
-        time.sleep(300)  # Wait for 5 minutes
+        time.sleep(15)  # Wait for 5 minutes
 finally:
     GPIO.cleanup()
