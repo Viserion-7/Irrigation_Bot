@@ -8,6 +8,9 @@ import RPi.GPIO as GPIO
 import time
 from dotenv import load_dotenv
 
+# Cleanup any previous GPIO settings
+GPIO.cleanup()
+
 # Load environment variables
 load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
@@ -159,4 +162,7 @@ def handle_check_moisture(message):
 def handle_default(message):
     bot.reply_to(message, 'I did not understand that command. Type /help to see what I can do.')
 
-bot.infinity_polling()
+try:
+    bot.infinity_polling()
+finally:
+    GPIO.cleanup()
