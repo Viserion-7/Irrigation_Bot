@@ -32,9 +32,9 @@ GPIO.output(PUMP_PIN, GPIO.HIGH)  # Turn off pump initially
 # Function to turn off the pump
 def pump_off(delay=1):
     print("Pump off")
-    GPIO.output(PUMP_PIN, GPIO.HIGH)
+    GPIO.output(PUMP_PIN, GPIO.LOW)
     time.sleep(delay)
-    
+
 # Ensure pump is initially turned off
 pump_off()
 
