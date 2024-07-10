@@ -86,7 +86,7 @@ def get_current_moisture_level():
 
 # Function to turn on the pump
 def pump_on(delay=1):
-    print("pumping")
+    print("Pumping")
     GPIO.output(PUMP_PIN, GPIO.LOW)
     time.sleep(delay)
     GPIO.output(PUMP_PIN, GPIO.HIGH)
@@ -112,12 +112,14 @@ def generate_weekly_report():
 # Bot command handlers
 @bot.message_handler(commands=['start', 'hello'])
 def greet(message):
+    print("Command Read: /start or hello")
     global chat_id
     chat_id = message.chat.id
     bot.reply_to(message, 'Hello! I am your Plant Hydration Bot. Type /help to see what I can do.')
 
 @bot.message_handler(commands=['help'])
 def help_command(message):
+    print("Command Read: /help")
     help_text = (
         "/start or /hello - Greet the bot\n"
         "/waternow - Manually water the plants\n"
@@ -131,10 +133,12 @@ def help_command(message):
 
 @bot.message_handler(commands=['waternow'])
 def handle_water_now(message):
+    print("Command Read: /waternow")
     water_now()
 
 @bot.message_handler(commands=['setSchedule'])
 def handle_set_schedule(message):
+    print("Command Read: /setSchedule")
     try:
         time = message.text.split('/setSchedule ')[1]
         if is_valid_time_format(time):
@@ -146,20 +150,24 @@ def handle_set_schedule(message):
 
 @bot.message_handler(commands=['schedule'])
 def handle_view_schedule(message):
+    print("Command Read: /schedule")
     view_schedule()
 
 @bot.message_handler(commands=['report'])
 def handle_generate_report(message):
+    print("Command Read: /report")
     generate_weekly_report()
 
 @bot.message_handler(commands=['checkMoisture'])
 def handle_check_moisture(message):
+    print("Command Read: /checkMoisture")
     moisture_level = get_current_moisture_level()
     moisture_status = "wet" if moisture_level == 0 else "dry"
     bot.send_message(chat_id, f"The current moisture level is {moisture_status}.")
 
 @bot.message_handler(func=lambda message: True)
 def handle_default(message):
+    print("Command Read: /bullshit")
     bot.reply_to(message, 'I did not understand that command. Type /help to see what I can do.')
 
 try:
