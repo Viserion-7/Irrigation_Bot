@@ -192,6 +192,10 @@ def handle_default(message):
     bot.reply_to(message, 'I did not understand that command. Type /help to see what I can do.')
 
 try:
-    bot.infinity_polling()
+    # Main loop to check moisture level every 5 minutes
+    while True:
+        bot.polling(none_stop=True)
+        handle_check_moisture()
+        time.sleep(300)  # Wait for 5 minutes
 finally:
     GPIO.cleanup()
