@@ -167,6 +167,7 @@ def handle_generate_report(message):
 def handle_check_moisture(message):
     print("Command Read: /checkMoisture")
     moisture_level = get_current_moisture_level()
+
     if moisture_level >= 50:
         moisture_status = "wet"
         pump_off()
@@ -174,8 +175,9 @@ def handle_check_moisture(message):
         moisture_status = "dry"
         pump_on()
 
-    # moisture_status = "wet" if moisture_level == 0 else "dry"
-    bot.send_message(chat_id, f"The current moisture level is {moisture_status}.")
+    # Log the moisture status and action taken
+    log_watering_event(manual=False)  # Assuming this is an automatic check
+    bot.send_message(chat_id, f"The current moisture level is {moisture_status}. Pump turned {moisture_status}.")
 
 @bot.message_handler(func=lambda message: True)
 def handle_default(message):
