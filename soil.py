@@ -6,7 +6,7 @@ channel = 14
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(channel, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)  # Add pull-down resistor
 
-def soil_callback(channel):
+def soil_callback(channel=14):
     if GPIO.input(channel):
         print("Soil is dry")
     else:
