@@ -7,35 +7,16 @@ import datetime
 import random
 from dotenv import load_dotenv
 import re
-import RPi.GPIO as GPIO
 import time
+import RPi.GPIO as GPIO
+
+from soil import soil_callback, setup_soil_sensor
+from water import auto_water, pump_on, get_last_watered
 
 load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
-botRunning = True
 bot = telebot.TeleBot(API_TOKEN)
-
-# GPIO setup
-GPIO.setmode(GPIO.BOARD)
-PUMP_PIN = 7
-MOISTURE_SENSOR_PIN = 8
-
-def init_output(pin):
-    GPIO.setup(pin, GPIO.OUT)
-    GPIO.output(pin, GPIO.LOW)
-    GPIO.output(pin, GPIO.HIGH)
-
-def pump_on(pump_pin=PUMP_PIN, delay=1):
-    init_output(pump_pin)
-    with open("last_watered.txt", "w") as f:
-        f.write("Last watered {}".format(datetime.datetime.now()))
-    GPIO.output(pump_pin, GPIO.LOW)
-    time.sleep(delay)
-    GPIO.output(pump_pin, GPIO.HIGH)
-
-def get_status(pin=MOISTURE_SENSOR_PIN):
-    GPIO.setup(pin, GPIO.IN)
-    return GPIO.input(pin)
+botRunning = True
 
 # Global variables to store schedule and data
 schedule_file = 'schedule.txt'
@@ -56,23 +37,18 @@ try:
 except FileNotFoundError:
     moisture_data = []
 
-# Function to simulate sending a message when moisture-based watering occurs
 def notify_moisture_watering():
     bot.send_message(chat_id, "Moisture levels are low. Watering plants now!")
 
-# Function to manually water plants
 def water_now():
     pump_on()
     bot.send_message(chat_id, "Watering plants manually now!")
     log_watering_event(manual=True)
 
-# Function to validate the time format
 def is_valid_time_format(time_str):
-    # Regex to match time in HH:MM format
     time_format = re.compile(r'^([01]\d|2[0-3]):([0-5]\d)$')
     return bool(time_format.match(time_str))
 
-# Function to set a watering schedule
 def set_schedule(time):
     global schedule
     schedule = time
@@ -80,14 +56,12 @@ def set_schedule(time):
         json.dump(schedule, f)
     bot.send_message(chat_id, f"Watering schedule set to {time}")
 
-# Function to view the current watering schedule
 def view_schedule():
     if schedule:
         bot.send_message(chat_id, f"Current watering schedule: {schedule}")
     else:
         bot.send_message(chat_id, "No watering schedule set.")
 
-# Function to log watering events
 def log_watering_event(manual=False):
     event = {
         "timestamp": datetime.datetime.now().strftime('%Y-%m-%d %H:%M'),
@@ -98,12 +72,9 @@ def log_watering_event(manual=False):
     with open(moisture_data_file, 'w') as f:
         json.dump(moisture_data, f)
 
-# Function to get current moisture level
 def get_current_moisture_level():
-    GPIO.setup(MOISTURE_SENSOR_PIN, GPIO.IN)
-    return GPIO.input(MOISTURE_SENSOR_PIN)  # Returns 0 if wet, 1 if dry
+    return soil_callback(21)  # Using BCM GPIO 21
 
-# Function to generate weekly report and save as CSV
 def generate_weekly_report():
     now = datetime.datetime.now()
     one_week_ago = now - datetime.timedelta(days=7)
@@ -119,7 +90,6 @@ def generate_weekly_report():
     bot.send_message(chat_id, "Here is the weekly moisture and watering report.")
     bot.send_document(chat_id, open(csv_file, 'rb'))
 
-# Bot command handlers
 @bot.message_handler(commands=['start', 'hello'])
 def greet(message):
     global chat_id
@@ -165,4 +135,6 @@ def handle_generate_report(message):
 def handle_default(message):
     bot.reply_to(message, 'I did not understand that command. Type /help to see what I can do.')
 
-bot.infinity_polling()
+if __name__ == "__main__":
+    setup_soil_sensor(soil_callback)
+    bot.infinity_polling()
