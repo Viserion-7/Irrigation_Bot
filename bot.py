@@ -6,7 +6,6 @@ import datetime
 import re
 import RPi.GPIO as GPIO
 import time
-from threading import Thread
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -122,6 +121,7 @@ def help_command(message):
         "/setSchedule HH:MM - Set a watering schedule (24-hour format)\n"
         "/schedule - View the current watering schedule\n"
         "/report - Generate and receive the weekly moisture and watering report\n"
+        "/checkMoisture - Check the current moisture level\n"
         "/help - Show this help message"
     )
     bot.send_message(chat_id, help_text)
@@ -149,20 +149,14 @@ def handle_view_schedule(message):
 def handle_generate_report(message):
     generate_weekly_report()
 
+@bot.message_handler(commands=['checkMoisture'])
+def handle_check_moisture(message):
+    moisture_level = get_current_moisture_level()
+    moisture_status = "wet" if moisture_level == 0 else "dry"
+    bot.send_message(chat_id, f"The current moisture level is {moisture_status}.")
+
 @bot.message_handler(func=lambda message: True)
 def handle_default(message):
     bot.reply_to(message, 'I did not understand that command. Type /help to see what I can do.')
-
-# Function to automatically check moisture and water plants if needed
-def automatic_watering():
-    while True:
-        if get_current_moisture_level() == 1:  # If soil is dry
-            pump_on()
-            log_watering_event(manual=False)
-            bot.send_message(chat_id, "Automatically watering plants due to low moisture level.")
-        time.sleep(3600)  # Check every hour
-
-# Start the automatic watering thread
-Thread(target=automatic_watering, daemon=True).start()
 
 bot.infinity_polling()
