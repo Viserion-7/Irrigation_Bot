@@ -7,7 +7,6 @@ import re
 import RPi.GPIO as GPIO
 import time
 from dotenv import load_dotenv
-import threading
 
 # Cleanup any previous GPIO settings
 GPIO.cleanup()
@@ -30,13 +29,6 @@ GPIO.setup(MOISTURE_SENSOR_PIN, GPIO.IN)
 GPIO.setup(PUMP_PIN, GPIO.OUT)
 GPIO.output(PUMP_PIN, GPIO.HIGH)  # Turn off pump initially
 
-
-def pump_off(delay=1):
-    print("Pump off")
-    GPIO.output(PUMP_PIN, GPIO.HIGH)
-    time.sleep(delay)
-
-    
 # Ensure pump is initially turned off
 pump_off()
 
@@ -106,6 +98,12 @@ def pump_on(delay=1):
     with open("last_watered.txt", "w") as f:
         f.write("Last watered {}".format(datetime.datetime.now()))
 
+# Function to turn off the pump
+def pump_off(delay=1):
+    print("Pump off")
+    GPIO.output(PUMP_PIN, GPIO.HIGH)
+    time.sleep(delay)
+
 # Function to generate weekly report and save as CSV
 def generate_weekly_report():
     now = datetime.datetime.now()
@@ -121,11 +119,6 @@ def generate_weekly_report():
 
     bot.send_message(chat_id, "Here is the weekly moisture and watering report.")
     bot.send_document(chat_id, open(csv_file, 'rb'))
-
-# Function to periodically check moisture level
-def periodic_moisture_check():
-    handle_check_moisture()
-    threading.Timer(300, periodic_moisture_check).start()  # Check every 5 minutes (adjust as needed)
 
 # Bot command handlers
 @bot.message_handler(commands=['start', 'hello'])
@@ -177,8 +170,8 @@ def handle_generate_report(message):
     generate_weekly_report()
 
 @bot.message_handler(commands=['checkMoisture'])
-def handle_check_moisture(message=None):
-    print("Command Read: Auto Moisture Check")
+def handle_check_moisture(message):
+    print("Command Read: /checkMoisture")
     moisture_level = get_current_moisture_level()
 
     if moisture_level == 0:
@@ -192,16 +185,12 @@ def handle_check_moisture(message=None):
 
     # Log the moisture status and action taken
     log_watering_event(manual=False)  # Assuming this is an automatic check
-    if message:
-        bot.send_message(chat_id, f"The current moisture level is {moisture_status}. Pump turned {moisture_status}.")
+    bot.send_message(chat_id, f"The current moisture level is {moisture_status}. Pump turned {moisture_status}.")
 
 @bot.message_handler(func=lambda message: True)
 def handle_default(message):
     print("Command Read: /bullshit")
     bot.reply_to(message, 'I did not understand that command. Type /help to see what I can do.')
-
-# Start periodic moisture checking
-periodic_moisture_check()
 
 try:
     bot.infinity_polling()
