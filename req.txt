@@ -4,5 +4,6 @@ idna==3.7
 pyTelegramBotAPI==4.20.0
 python-dotenv==1.0.1
 requests==2.32.3
+RPi.GPIO==0.7.1
 telebot==0.0.5
 urllib3==2.2.2
