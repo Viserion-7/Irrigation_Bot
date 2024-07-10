@@ -168,12 +168,12 @@ def handle_check_moisture(message):
     print("Command Read: /checkMoisture")
     moisture_level = get_current_moisture_level()
 
-    if moisture_level >= 10:
-        moisture_status = "wet"
-        pump_off()
-    else:
+    if moisture_level == 0:
         moisture_status = "dry"
         pump_on()
+    else:
+        moisture_status = "wet"
+        pump_off()
 
     # Log the moisture status and action taken
     log_watering_event(manual=False)  # Assuming this is an automatic check
