@@ -27,16 +27,9 @@ PUMP_PIN = 7
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(MOISTURE_SENSOR_PIN, GPIO.IN)
 GPIO.setup(PUMP_PIN, GPIO.OUT)
-GPIO.output(PUMP_PIN, GPIO.HIGH)  # Turn off pump initially
+GPIO.output(PUMP_PIN, GPIO.LOW)  # Turn off pump initially
 
-# Function to turn off the pump
-def pump_off(delay=1):
-    print("Pump off")
-    GPIO.output(PUMP_PIN, GPIO.LOW)
-    time.sleep(delay)
 
-# Ensure pump is initially turned off
-pump_off()
 
 # Load initial schedule from file
 try:
@@ -103,6 +96,12 @@ def pump_on(delay=1):
     GPIO.output(PUMP_PIN, GPIO.HIGH)
     with open("last_watered.txt", "w") as f:
         f.write("Last watered {}".format(datetime.datetime.now()))
+
+# Function to turn off the pump
+def pump_off(delay=1):
+    print("Pump off")
+    GPIO.output(PUMP_PIN, GPIO.LOW)
+    time.sleep(delay)
 
 # Function to generate weekly report and save as CSV
 def generate_weekly_report():
