@@ -93,6 +93,11 @@ def pump_on(delay=1):
     with open("last_watered.txt", "w") as f:
         f.write("Last watered {}".format(datetime.datetime.now()))
 
+def pump_off(delay=1):
+    print("Pump off")
+    GPIO.output(PUMP_PIN, GPIO.HIGH)
+    time.sleep(delay)
+
 # Function to generate weekly report and save as CSV
 def generate_weekly_report():
     now = datetime.datetime.now()
@@ -162,7 +167,14 @@ def handle_generate_report(message):
 def handle_check_moisture(message):
     print("Command Read: /checkMoisture")
     moisture_level = get_current_moisture_level()
-    moisture_status = "wet" if moisture_level == 0 else "dry"
+    if moisture_level >= 50:
+        moisture_status = "wet"
+        pump_off()
+    else:
+        moisture_status = "dry"
+        pump_on()
+
+    # moisture_status = "wet" if moisture_level == 0 else "dry"
     bot.send_message(chat_id, f"The current moisture level is {moisture_status}.")
 
 @bot.message_handler(func=lambda message: True)
