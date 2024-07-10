@@ -6,6 +6,7 @@ import datetime
 import re
 import RPi.GPIO as GPIO
 import time
+from threading import Thread
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -83,6 +84,7 @@ def get_current_moisture_level():
 
 # Function to turn on the pump
 def pump_on(delay=1):
+    print("pumping")
     GPIO.output(PUMP_PIN, GPIO.LOW)
     time.sleep(delay)
     GPIO.output(PUMP_PIN, GPIO.HIGH)
@@ -150,5 +152,17 @@ def handle_generate_report(message):
 @bot.message_handler(func=lambda message: True)
 def handle_default(message):
     bot.reply_to(message, 'I did not understand that command. Type /help to see what I can do.')
+
+# Function to automatically check moisture and water plants if needed
+def automatic_watering():
+    while True:
+        if get_current_moisture_level() == 1:  # If soil is dry
+            pump_on()
+            log_watering_event(manual=False)
+            bot.send_message(chat_id, "Automatically watering plants due to low moisture level.")
+        time.sleep(3600)  # Check every hour
+
+# Start the automatic watering thread
+Thread(target=automatic_watering, daemon=True).start()
 
 bot.infinity_polling()
