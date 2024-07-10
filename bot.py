@@ -195,6 +195,7 @@ try:
     # Main loop to check moisture level every 5 minutes
     while True:
         bot.polling(none_stop=True)
+        print("Checking moisture level...")
         handle_check_moisture()
         time.sleep(15)  # Wait for 5 minutes
 finally:
