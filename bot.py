@@ -95,7 +95,7 @@ def pump_on(delay=1):
 
 def pump_off(delay=1):
     print("Pump off")
-    GPIO.output(PUMP_PIN, GPIO.HIGH)
+    GPIO.output(PUMP_PIN, GPIO.LOW)
     time.sleep(delay)
 
 # Function to generate weekly report and save as CSV
