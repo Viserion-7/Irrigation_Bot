@@ -184,7 +184,7 @@ def handle_check_moisture(message):
 
     # Log the moisture status and action taken
     log_watering_event(manual=False)  # Assuming this is an automatic check
-    bot.send_message(chat_id, f"The current moisture level is {moisture_status}. Pump turned {moisture_status}.")
+    bot.send_message(chat_id, f"The current moisture level is {moisture_status}. Pump turned {'off' if moisture_status == 'wet' else 'on'}.")
 
 @bot.message_handler(func=lambda message: True)
 def handle_default(message):
