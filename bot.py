@@ -9,9 +9,6 @@ import time
 from dotenv import load_dotenv
 import threading
 
-# Cleanup any previous GPIO settings
-GPIO.cleanup()
-
 # Load environment variables
 load_dotenv()
 API_TOKEN = os.getenv('API_TOKEN')
@@ -47,7 +44,7 @@ except FileNotFoundError:
 def water_now():
     pump_on()
     log_watering_event(manual=True)
-    time.sleep(2)
+    time.sleep(1)
     pump_off()
 
 # Function to validate the time format
@@ -135,7 +132,6 @@ def schedule_checker():
 moisture_status = ""
 
 def moisture_check():
-    print("Command Read: /checkMoisture")
     moisture_level = get_current_moisture_level()
     global moisture_status
 
@@ -144,15 +140,16 @@ def moisture_check():
         pump_off()
     else:
         moisture_status = "dry"
-        pump_on()
-        time.sleep(5)
-        pump_off()
+        water_now()
+
+check_frequency = 0
 
 # Function to check moisture periodically
 def periodic_moisture_check():
     while True:
+        print("Auto-checking moisture level.")
         moisture_check()
-        time.sleep(60)
+        time.sleep(check_frequency)
 
 # Start the schedule checking thread
 schedule_thread = threading.Thread(target=schedule_checker)
@@ -191,6 +188,16 @@ def handle_water_now(message):
     print("Command Read: /waternow")
     water_now()
 
+@bot.message_handler(commands=['setMoistureCheckFrequency'])
+def handle_set_moisture_check_frequency(message):
+    print("Command Read: /setMoistureCheckFrequency")
+    try:
+        global check_frequency
+        check_frequency = int(message.text.split('/setMoistureCheckFrequency ')[1])
+        bot.send_message(chat_id, f"Moisture check frequency set to {check_frequency} seconds.")
+    except IndexError:
+        bot.send_message(chat_id, "Please provide a frequency in seconds. Usage: /setMoistureCheckFrequency <frequency in seconds>")
+
 @bot.message_handler(commands=['setSchedule'])
 def handle_set_schedule(message):
     print("Command Read: /setSchedule")
@@ -215,10 +222,10 @@ def handle_generate_report(message):
 
 @bot.message_handler(commands=['checkMoisture'])
 def handle_check_moisture(message):
+    print("Command Read: /checkMoisture")
     global moisture_status
     moisture_check()
-    # Log the moisture status and action taken
-    log_watering_event(manual=False)  # Assuming this is an automatic check
+    log_watering_event(manual=False)
     bot.send_message(chat_id, f"The current moisture level is {moisture_status}. Pump turned {'off' if moisture_status == 'wet' else 'on'}.")
 
 @bot.message_handler(func=lambda message: True)
