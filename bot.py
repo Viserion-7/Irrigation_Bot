@@ -151,7 +151,7 @@ def moisture_check():
 # Function to check moisture periodically
 def periodic_moisture_check():
     while True:
-        moisture_check(None)
+        moisture_check()
         time.sleep(60)
 
 # Start the schedule checking thread
