@@ -132,6 +132,22 @@ def schedule_checker():
 
         time.sleep(30)  # Check every 30 seconds
 
+moisture_status = ""
+
+def moisture_check():
+    print("Command Read: /checkMoisture")
+    moisture_level = get_current_moisture_level()
+    global moisture_status
+
+    if moisture_level == 0:
+        moisture_status = "wet"
+        pump_off()
+    else:
+        moisture_status = "dry"
+        pump_on()
+        time.sleep(5)
+        pump_off()
+
 # Function to check moisture periodically
 def periodic_moisture_check():
     while True:
@@ -196,23 +212,6 @@ def handle_view_schedule(message):
 def handle_generate_report(message):
     print("Command Read: /report")
     generate_weekly_report()
-
-
-moisture_status = ""
-
-def moisture_check():
-    print("Command Read: /checkMoisture")
-    moisture_level = get_current_moisture_level()
-    global moisture_status
-
-    if moisture_level == 0:
-        moisture_status = "wet"
-        pump_off()
-    else:
-        moisture_status = "dry"
-        pump_on()
-        time.sleep(5)
-        pump_off()
 
 @bot.message_handler(commands=['checkMoisture'])
 def handle_check_moisture(message):
