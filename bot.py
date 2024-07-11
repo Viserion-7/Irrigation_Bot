@@ -16,6 +16,7 @@ bot = telebot.TeleBot(API_TOKEN)
 
 # Global variables to store schedule and data
 schedule_file = 'schedule.txt'
+checkFrequency_file = 'checkFrequency.txt'
 moisture_data_file = 'moisture_data.json'
 chat_id = None
 
@@ -33,6 +34,12 @@ try:
 except FileNotFoundError:
     schedule = None
 
+try:
+    with open(checkFrequency_file, 'r') as f:
+        check_frequency = json.load(f)
+except FileNotFoundError:
+    check_frequency = 60
+
 # Load initial moisture data from file
 try:
     with open(moisture_data_file, 'r') as f:
@@ -44,7 +51,7 @@ except FileNotFoundError:
 def water_now():
     pump_on()
     log_watering_event(manual=True)
-    time.sleep(0.2)
+    time.sleep(0.5)
     pump_off()
 
 # Function to validate the time format
@@ -193,9 +200,10 @@ def handle_water_now(message):
 def handle_set_moisture_check_frequency(message):
     print("Command Read: /setMoistureCheckFrequency")
     try:
-        global check_frequency
         check_frequency = int(message.text.split('/setMoistureCheckFrequency ')[1])
-        bot.send_message(chat_id, f"Moisture check frequency set to {check_frequency} seconds.")
+        with open(checkFrequency_file, 'w') as f:
+            json.dump(check_frequency, f)
+            bot.send_message(chat_id, f"Moisture check frequency set to {check_frequency} seconds.")
     except IndexError:
         bot.send_message(chat_id, "Please provide a frequency in seconds. Usage: /setMoistureCheckFrequency <frequency in seconds>")
 
