@@ -147,9 +147,9 @@ check_frequency = 60 # default value
 
 # Function to check moisture periodically
 def periodic_moisture_check():
-    with open(checkFrequency_file, 'r') as f:
-        check_frequency = json.load(f)
     while True:
+        with open(checkFrequency_file, 'r') as f:
+            check_frequency = json.load(f)
         print("Auto-checking moisture level.")
         print("Current check-frequency: ", check_frequency)
         moisture_check()
