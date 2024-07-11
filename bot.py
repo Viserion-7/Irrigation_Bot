@@ -46,9 +46,8 @@ except FileNotFoundError:
 # Function to manually water plants
 def water_now():
     pump_on()
-    bot.send_message(chat_id, "Watering plants manually now!")
     log_watering_event(manual=True)
-    time.sleep(5)  # Delay for 5 seconds
+    time.sleep(2)
     pump_off()
 
 # Function to validate the time format
@@ -125,17 +124,29 @@ def schedule_checker():
             schedule_time = datetime.datetime.strptime(schedule, '%H:%M').time()
             current_time = now.time()
 
-            if current_time >= schedule_time and current_time <= (datetime.datetime.combine(now, schedule_time) + datetime.timedelta(minutes=1)).time():
+            if current_time >= schedule_time and current_time <= (datetime.datetime.combine(now, schedule_time) + datetime.timedelta(minutes=2)).time():
                 print("Scheduled watering")
+                bot.send_message(chat_id, f"Watering as per schedule at {schedule_time}")
                 water_now()
-                time.sleep(60)  # Sleep for 1 minute to avoid multiple triggers
+                time.sleep(60)
 
         time.sleep(30)  # Check every 30 seconds
+
+# Function to check moisture periodically
+def periodic_moisture_check():
+    while True:
+        handle_check_moisture(None)  # Passing None as a placeholder for the message argument
+        time.sleep(3600)  # Check every hour (3600 seconds)
 
 # Start the schedule checking thread
 schedule_thread = threading.Thread(target=schedule_checker)
 schedule_thread.daemon = True
 schedule_thread.start()
+
+# Start the periodic moisture checking thread
+moisture_check_thread = threading.Thread(target=periodic_moisture_check)
+moisture_check_thread.daemon = True
+moisture_check_thread.start()
 
 # Bot command handlers
 @bot.message_handler(commands=['start', 'hello'])
