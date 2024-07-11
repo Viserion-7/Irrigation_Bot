@@ -34,12 +34,6 @@ try:
 except FileNotFoundError:
     schedule = None
 
-try:
-    with open(checkFrequency_file, 'r') as f:
-        check_frequency = json.load(f)
-except FileNotFoundError:
-    check_frequency = 60
-
 # Load initial moisture data from file
 try:
     with open(moisture_data_file, 'r') as f:
@@ -149,10 +143,12 @@ def moisture_check():
         moisture_status = "dry"
         water_now()
 
-check_frequency = 60
+check_frequency = 60 # default value
 
 # Function to check moisture periodically
 def periodic_moisture_check():
+    with open(checkFrequency_file, 'r') as f:
+        check_frequency = json.load(f)
     while True:
         print("Auto-checking moisture level.")
         print("Current check-frequency: ", check_frequency)
