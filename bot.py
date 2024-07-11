@@ -44,7 +44,7 @@ except FileNotFoundError:
 def water_now():
     pump_on()
     log_watering_event(manual=True)
-    time.sleep(1)
+    time.sleep(0.2)
     pump_off()
 
 # Function to validate the time format
