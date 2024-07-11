@@ -63,6 +63,7 @@ def set_schedule(time):
 
 # Function to view the current watering schedule
 def view_schedule():
+    global schedule
     if schedule:
         bot.send_message(chat_id, f"Current watering schedule: {schedule}")
     else:
