@@ -142,7 +142,7 @@ def moisture_check():
         moisture_status = "dry"
         water_now()
 
-check_frequency = 0
+check_frequency = 60
 
 # Function to check moisture periodically
 def periodic_moisture_check():
@@ -180,6 +180,7 @@ def help_command(message):
         "/report - Generate and receive the weekly moisture and watering report\n"
         "/checkMoisture - Check the current moisture level\n"
         "/help - Show this help message"
+        "/setMoistureCheckFrequency - Set the frequency of moisture checks <frequency in seconds> \n"
     )
     bot.send_message(chat_id, help_text)
 
