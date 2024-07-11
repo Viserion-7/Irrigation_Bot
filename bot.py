@@ -179,7 +179,7 @@ def help_command(message):
         "/schedule - View the current watering schedule\n"
         "/report - Generate and receive the weekly moisture and watering report\n"
         "/checkMoisture - Check the current moisture level\n"
-        "/help - Show this help message"
+        "/help - Show this help message\n"
         "/setMoistureCheckFrequency - Set the frequency of moisture checks <frequency in seconds> \n"
     )
     bot.send_message(chat_id, help_text)
