@@ -135,8 +135,8 @@ def schedule_checker():
 # Function to check moisture periodically
 def periodic_moisture_check():
     while True:
-        handle_check_moisture(None)  # Passing None as a placeholder for the message argument
-        time.sleep(3600)  # Check every hour (3600 seconds)
+        moisture_check(None)
+        time.sleep(60)
 
 # Start the schedule checking thread
 schedule_thread = threading.Thread(target=schedule_checker)
@@ -197,10 +197,13 @@ def handle_generate_report(message):
     print("Command Read: /report")
     generate_weekly_report()
 
-@bot.message_handler(commands=['checkMoisture'])
-def handle_check_moisture(message):
+
+moisture_status = ""
+
+def moisture_check():
     print("Command Read: /checkMoisture")
     moisture_level = get_current_moisture_level()
+    global moisture_status
 
     if moisture_level == 0:
         moisture_status = "wet"
@@ -211,6 +214,10 @@ def handle_check_moisture(message):
         time.sleep(5)
         pump_off()
 
+@bot.message_handler(commands=['checkMoisture'])
+def handle_check_moisture(message):
+    global moisture_status
+    moisture_check()
     # Log the moisture status and action taken
     log_watering_event(manual=False)  # Assuming this is an automatic check
     bot.send_message(chat_id, f"The current moisture level is {moisture_status}. Pump turned {'off' if moisture_status == 'wet' else 'on'}.")
