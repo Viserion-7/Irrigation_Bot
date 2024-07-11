@@ -7,6 +7,7 @@ import re
 import RPi.GPIO as GPIO
 import time
 from dotenv import load_dotenv
+import threading
 
 # Cleanup any previous GPIO settings
 GPIO.cleanup()
@@ -27,11 +28,8 @@ PUMP_PIN = 7
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(MOISTURE_SENSOR_PIN, GPIO.IN)
 GPIO.setup(PUMP_PIN, GPIO.OUT)
-GPIO.output(PUMP_PIN, GPIO.LOW)  # Turn off pump initially
+GPIO.output(PUMP_PIN, GPIO.LOW)
 
-
-
-# Load initial schedule from file
 try:
     with open(schedule_file, 'r') as f:
         schedule = json.load(f)
@@ -119,6 +117,26 @@ def generate_weekly_report():
     bot.send_message(chat_id, "Here is the weekly moisture and watering report.")
     bot.send_document(chat_id, open(csv_file, 'rb'))
 
+# Thread function to check schedule and run pump
+def schedule_checker():
+    while True:
+        if schedule:
+            now = datetime.datetime.now()
+            schedule_time = datetime.datetime.strptime(schedule, '%H:%M').time()
+            current_time = now.time()
+
+            if current_time >= schedule_time and current_time <= (datetime.datetime.combine(now, schedule_time) + datetime.timedelta(minutes=1)).time():
+                print("Scheduled watering")
+                water_now()
+                time.sleep(60)  # Sleep for 1 minute to avoid multiple triggers
+
+        time.sleep(30)  # Check every 30 seconds
+
+# Start the schedule checking thread
+schedule_thread = threading.Thread(target=schedule_checker)
+schedule_thread.daemon = True
+schedule_thread.start()
+
 # Bot command handlers
 @bot.message_handler(commands=['start', 'hello'])
 def greet(message):
@@ -192,11 +210,6 @@ def handle_default(message):
     bot.reply_to(message, 'I did not understand that command. Type /help to see what I can do.')
 
 try:
-    # Main loop to check moisture level every 5 minutes
-    while True:
-        bot.polling(none_stop=True)
-        print("Checking moisture level...")
-        handle_check_moisture()
-        time.sleep(15)  # Wait for 5 minutes
+    bot.infinity_polling()
 finally:
     GPIO.cleanup()
