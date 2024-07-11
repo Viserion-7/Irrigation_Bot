@@ -155,6 +155,7 @@ check_frequency = 60
 def periodic_moisture_check():
     while True:
         print("Auto-checking moisture level.")
+        print("Current check-frequency: ", check_frequency)
         moisture_check()
         time.sleep(check_frequency)
 
